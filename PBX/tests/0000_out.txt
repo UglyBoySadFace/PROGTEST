@@ -1,0 +1,11 @@
+PBX configuration (+ = set, - = delete, ? = test, EOF = quit):
+NEW
+NEW
+UPDATED
+FOUND 12345 (Novy)
+FOUND 4567 (Svoboda)
+NOT FOUND
+NEW
+FOUND 98765 (Vesely)
+NOT FOUND
+FOUND 12345 (Novy)

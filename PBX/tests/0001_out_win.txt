@@ -1,0 +1,16 @@
+PBX configuration (+ = set, - = delete, ? = test, EOF = quit):
+NEW
+NEW
+NEW
+NEW
+FOUND 2278 (Bart)
+AMBIGUOUS (3 matches)
+DELETED
+AMBIGUOUS (2 matches)
+DELETED
+FOUND 2345 (Kiss)
+NOT FOUND
+UPDATED
+FOUND 2278 (Meggie)
+NEW
+AMBIGUOUS (2 matches)

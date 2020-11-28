@@ -13,36 +13,28 @@ void formatInput(char *input)
 {
     char *d = input;
     int space = 2;
-    if ((*d == '+' || *d == '-' || *d == '?'))
+    while (*input)
     {
-        while (*input)
+        if (space)
         {
-            if (space)
+            if (!isblank(*input))
             {
-                if (!isblank(*input))
-                {
-                    space = 0;
-                    *d++ = *input++;
-                }
-                else
-                    input++;
-            }
-            else
-            {
-                if (isblank(*input))
-                    space = 1;
+                space = 0;
                 *d++ = *input++;
             }
+            else
+                input++;
         }
-        if (space == 1)
-            d--;
-        *d = '\0';
+        else
+        {
+            if (isblank(*input))
+                space = 1;
+            *d++ = *input++;
+        }
     }
-    else
-    {
-        *input = 0;
-        return;
-    }
+    if (space == 1)
+        d--;
+    *d = '\0';
 }
 //false -> N/All DIGITS
 int checkDigits(char *number)
@@ -51,31 +43,10 @@ int checkDigits(char *number)
     {
         if (!(isdigit(*number++)))
         {
-            printf(" not a dig > %c \n", *number);
             return 0;
         }
     }
     return 1;
-}
-int checkName(char *name)
-{
-    int pass = 0;
-    while (*name)
-    {
-        if (*name == '"' && !pass)
-        {
-            pass++;
-        }
-        else if (*name == '"')
-        {
-            pass++;
-        }
-        name++;
-    }
-    if (pass == 2)
-        return 1;
-    else
-        return 0;
 }
 void removeChar(char *str, char garbage)
 {
@@ -97,26 +68,70 @@ void stripLF(char *line)
 }
 int T9(char *name, char *number)
 {
-    char buttons[9][5] = {
+    char buttons[9][6] = {
         {'1', ' ', '\0'},
-        {'2', 'a','b','c', '\0'},
-        {'3', ' ', '\0'},
-        {'4', ' ', '\0'},
-        {'5', ' ', '\0'},
-        {'6', ' ', '\0'},
-        {'7', ' ', '\0'},
-        {'8', ' ', '\0'},
-        {'9', ' ', '\0'},
+        {'2', 'a', 'b', 'c', '\0'},
+        {'3', 'd', 'e', 'f', '\0'},
+        {'4', 'g', 'h', 'i', '\0'},
+        {'5', 'j', 'k', 'l', '\0'},
+        {'6', 'm', 'n', 'o', '\0'},
+        {'7', 'p', 'q', 'r', 's', '\0'},
+        {'8', 't', 'u', 'v', '\0'},
+        {'9', 'w', 'x', 'y', 'z', '\0'}};
+    char n0[36]={
+        '1','2','3','4','5','6','7','8','9','a', 'b', 'c','d', 'e', 'f','g', 'h', 'i','j', 'k',
+         'l','m', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','\0'
     };
+    int num_len = strlen(number),
+        name_len = strlen(number),
+        char_to_num, temp = 0;
+    if (num_len == name_len)
+    {
+        for (int i = 0; i < num_len; i++)
+        {
+            char_to_num = *number - '0';
+            for (int j = 0; j < 37; j++)
+            {
+                if (char_to_num == 0)
+                {
+                    if(n0[j]==tolower(*name)){
+                        temp = 0;
+                        break;
+                    }else
+                        temp = 1;
+                }
+                else
+                {
+                    if (buttons[char_to_num - 1][j] == '\0')
+                    {
+                        temp = 0;
+                        break;
+                    }
+                    if (buttons[char_to_num - 1][j] == tolower(*name))
+                    {
+                        temp = 1;
+                        break;
+                    }
+                }
+            }
+            if (!temp)
+                return 0;
+            number++;
+            name++;
+        }
+        return 1;
+    }
+    else
+        return 0;
 }
 int main(void)
 {
     printf("PBX configuration (+ = set, - = delete, ? = test, EOF = quit):\n");
     struct Record *record;
     record = (struct Record *)malloc(sizeof(struct Record));
-    size_t capacity = 0, record_size;
-    int counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
-    char option, *input, *name, *number, *matched_name;
+    size_t capacity = 0;
+    int temp_counter = 0, counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
+    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name, *matched_number, *trash= NULL;
     while (getline(&input, &capacity, stdin) != -1)
     {
         formatInput(input);
@@ -127,6 +142,7 @@ int main(void)
         }
         if (!fail)
         {
+            char *temp_input = strdup(input);
             char *info = strtok(input, " ");
             while (info != NULL)
             {
@@ -135,22 +151,33 @@ int main(void)
                 if (counter == 1)
                     number = info;
                 if (counter == 2)
-                    name = info;
+                {
+                    counter++;
+                    break;
+                }
                 info = strtok(NULL, " ");
                 counter++;
+            }
+            char *temp_info = strtok(temp_input, "\"");
+            while (temp_info != NULL)
+            {
+                if (temp_counter == 1)
+                    name = temp_info;
+                if (temp_counter == 2)
+                    trash = temp_info;
+                temp_info = strtok(NULL, "\"");
+                temp_counter++;
             }
             switch (option)
             {
             case '+':
-                if ((!checkDigits(number) || !checkName(name) || counter != 3))
+                if ((!checkDigits(number) || counter != 3 || temp_counter != 3 || trash == NULL))
                 {
                     printf("INVALID COMMAND\n");
-                    fail = 1;
+                    continue;
                 }
                 else
                 {
-                    stripLF(name);
-                    removeChar(name, '"');
                     if (record_counter == 0)
                     {
                         record[record_counter].name = strdup(name);
@@ -178,7 +205,7 @@ int main(void)
                                 {
                                     record[i].name = strdup(name);
                                     update = 1;
-                                    printf("UPDATE\n");
+                                    printf("UPDATED\n");
                                     break;
                                 }
                             }
@@ -197,8 +224,8 @@ int main(void)
                             record = (struct Record *)realloc(record, sizeof(struct Record) * pow(2, record_counter + 1));
                         }
                     }
-                    for (int i = 0; i < record_counter; i++)
-                        printf("#%s name:%s active:%d\n", record[i].number, record[i].name, record[i].active);
+                    //for (int i = 0; i < record_counter; i++)
+                    //  printf("#%s name:%s active:%d\n", record[i].number, record[i].name, record[i].active);
                 }
                 break;
             case '?':
@@ -206,29 +233,43 @@ int main(void)
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
-                    fail = 1;
+                    continue;
                 }
                 else
                 {
                     for (int i = 0; i < record_counter; i++)
                     {
-                        if (!strcmp(record[i].number, number) && record[i].active == 1)
+                        if (T9(record[i].name, number) && record[i].active == 1)
                         {
                             matches++;
+                            matched_number = record[i].number;
                             matched_name = record[i].name;
-                            break;
+                        }
+                    }
+                    for (int i = 0; i < record_counter; i++)
+                    {
+                        if (!strcmp(record[i].number, number) && record[i].active == 1)
+                        {
+                            //printf("matched name: %s matched number %s\n", matched_name, matched_number);
+                            //printf("name: %s linked to number %s\n", record[i].name, record[i].number);
+                            if (!(!strcmp(record[i].number, matched_number) && (!strcmp(record[i].name, matched_name))))
+                            {
+                                matches++;
+                                matched_number = record[i].number;
+                                matched_name = record[i].name;
+                            }
                         }
                     }
                     if (!matches)
                         printf("NOT FOUND\n");
                     if (matches == 1)
                     {
-                        printf("FOUND %s (%s)\n", number, matched_name);
+                        printf("FOUND %s (%s)\n", matched_number, matched_name);
                         matches = 0;
                     }
-                    else
+                    else if (matches > 1)
                     {
-                        printf("FOUND AMBIGUOUS %d\n", matches);
+                        printf("AMBIGUOUS (%d matches)\n", matches);
                     }
                 }
                 break;
@@ -237,7 +278,7 @@ int main(void)
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
-                    fail = 1;
+                    continue;
                 }
                 else
                 {
@@ -262,10 +303,14 @@ int main(void)
                 }
                 break;
             default:
+                printf("INVALID COMMAND\n");
+                continue;
                 break;
             }
         }
+        matches = 0;
         fail = 0;
         counter = 0;
+        temp_counter = 0;
     }
 }

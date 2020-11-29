@@ -78,10 +78,9 @@ int T9(char *name, char *number)
         {'7', 'p', 'q', 'r', 's', '\0'},
         {'8', 't', 'u', 'v', '\0'},
         {'9', 'w', 'x', 'y', 'z', '\0'}};
-    char n0[36]={
-        '1','2','3','4','5','6','7','8','9','a', 'b', 'c','d', 'e', 'f','g', 'h', 'i','j', 'k',
-         'l','m', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z','\0'
-    };
+    char n0[36] = {
+        '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
+        'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '\0'};
     int num_len = strlen(number),
         name_len = strlen(number),
         char_to_num, temp = 0;
@@ -94,10 +93,12 @@ int T9(char *name, char *number)
             {
                 if (char_to_num == 0)
                 {
-                    if(n0[j]==tolower(*name)){
+                    if (n0[j] == tolower(*name))
+                    {
                         temp = 0;
                         break;
-                    }else
+                    }
+                    else
                         temp = 1;
                 }
                 else
@@ -129,9 +130,10 @@ int main(void)
     printf("PBX configuration (+ = set, - = delete, ? = test, EOF = quit):\n");
     struct Record *record;
     record = (struct Record *)malloc(sizeof(struct Record));
-    size_t capacity = 0;
+    size_t capacity = 0, record_size = 0;
     int temp_counter = 0, counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
-    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name, *matched_number, *trash= NULL;
+    char hah[]="lol";
+    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name=hah, *matched_number=hah, *trash = NULL;
     while (getline(&input, &capacity, stdin) != -1)
     {
         formatInput(input);
@@ -185,7 +187,8 @@ int main(void)
                         record[record_counter].active = 1;
                         printf("NEW\n");
                         record_counter++;
-                        record = (struct Record *)realloc(record, sizeof(struct Record) * pow(2, record_counter + 1));
+                        record_size = sizeof(struct Record) * pow(2, record_counter + 1);
+                        record = (struct Record *)realloc(record, record_size);
                     }
                     else
                     {
@@ -221,11 +224,12 @@ int main(void)
                             record[record_counter].active = 1;
                             printf("NEW\n");
                             record_counter++;
-                            record = (struct Record *)realloc(record, sizeof(struct Record) * pow(2, record_counter + 1));
+                            record_size = sizeof(struct Record) * pow(2, record_counter + 1);
+                            record = (struct Record *)realloc(record, record_size);
                         }
                     }
-                    //for (int i = 0; i < record_counter; i++)
-                    //  printf("#%s name:%s active:%d\n", record[i].number, record[i].name, record[i].active);
+                    for (int i = 0; i < record_counter; i++)
+                      printf("#%s name:%s active:%d\n", record[i].number, record[i].name, record[i].active);
                 }
                 break;
             case '?':
@@ -250,8 +254,6 @@ int main(void)
                     {
                         if (!strcmp(record[i].number, number) && record[i].active == 1)
                         {
-                            //printf("matched name: %s matched number %s\n", matched_name, matched_number);
-                            //printf("name: %s linked to number %s\n", record[i].name, record[i].number);
                             if (!(!strcmp(record[i].number, matched_number) && (!strcmp(record[i].name, matched_name))))
                             {
                                 matches++;
@@ -265,6 +267,8 @@ int main(void)
                     if (matches == 1)
                     {
                         printf("FOUND %s (%s)\n", matched_number, matched_name);
+                        matched_number = hah;
+                        matched_name = hah;
                         matches = 0;
                     }
                     else if (matches > 1)
@@ -313,4 +317,5 @@ int main(void)
         counter = 0;
         temp_counter = 0;
     }
+    free(record);
 }

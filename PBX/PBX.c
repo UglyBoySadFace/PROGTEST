@@ -170,13 +170,17 @@ int main(void)
                 temp_info = strtok(NULL, "\"");
                 temp_counter++;
             }
+            if(number == NULL){
+                printf("INVALID COMMAND\n");
+                continue;
+            }
             switch (option)
             {
             case '+':
                 if ((!checkDigits(number) || counter != 3 || temp_counter != 3 || trash == NULL))
                 {
                     printf("INVALID COMMAND\n");
-                    continue;
+                    break;
                 }
                 else
                 {
@@ -228,8 +232,6 @@ int main(void)
                             record = (struct Record *)realloc(record, record_size);
                         }
                     }
-                    for (int i = 0; i < record_counter; i++)
-                      printf("#%s name:%s active:%d\n", record[i].number, record[i].name, record[i].active);
                 }
                 break;
             case '?':
@@ -237,7 +239,7 @@ int main(void)
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
-                    continue;
+                    break;;
                 }
                 else
                 {
@@ -308,7 +310,6 @@ int main(void)
                 break;
             default:
                 printf("INVALID COMMAND\n");
-                continue;
                 break;
             }
         }

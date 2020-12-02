@@ -132,52 +132,53 @@ int main(void)
     record = (struct Record *)malloc(sizeof(struct Record));
     size_t capacity = 0, record_size = 0;
     int temp_counter = 0, counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
-    char hah[]="lol";
-    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name=hah, *matched_number=hah, *trash = NULL;
+    char hah[] = "lol";
+    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name = hah, *matched_number = hah, *temp_info, *info;
     while (getline(&input, &capacity, stdin) != -1)
     {
         formatInput(input);
-        if (*input == 0 && !fail)
+        if (!(*input == '+' || *input == '-' || *input == '?') || *input == 0)
         {
             printf("INVALID COMMAND\n");
             fail = 1;
         }
-        if (!fail)
+        info = strtok(input, " ");
+        while (info != NULL)
         {
-            char *temp_input = strdup(input);
-            char *info = strtok(input, " ");
-            while (info != NULL)
-            {
-                if (counter == 0)
-                    option = *info;
-                if (counter == 1)
-                    number = info;
-                if (counter == 2)
-                {
-                    counter++;
-                    break;
-                }
-                info = strtok(NULL, " ");
-                counter++;
-            }
-            char *temp_info = strtok(temp_input, "\"");
+            if (counter == 0)
+                option = *info;
+            if (counter == 1)
+                number = info;
+            if (counter == 2)
+                name = info;
+            info = strtok(NULL, " ");
+            counter++;
+        }
+        if (name != NULL)
+        {
+            stripLF(name);
+            temp_info = strtok(name, "\"");
             while (temp_info != NULL)
             {
-                if (temp_counter == 1)
+                if (temp_counter == 0)
                     name = temp_info;
-                if (temp_counter == 2)
-                    trash = temp_info;
                 temp_info = strtok(NULL, "\"");
                 temp_counter++;
             }
-            if(number == NULL){
-                printf("INVALID COMMAND\n");
-                continue;
-            }
+        }
+        if (number == NULL)
+        {
+            temp_counter = 0;
+            counter = 0;
+            printf("INVALID COMMAND\n");
+            continue;
+        }
+        if (!fail)
+        {
             switch (option)
             {
             case '+':
-                if ((!checkDigits(number) || counter != 3 || temp_counter != 3 || trash == NULL))
+                if ((!checkDigits(number) || counter != 3 || temp_counter > 1))
                 {
                     printf("INVALID COMMAND\n");
                     break;
@@ -218,9 +219,7 @@ int main(void)
                             }
                         }
                         if (update)
-                        {
                             update = 0;
-                        }
                         else
                         {
                             record[record_counter].name = strdup(name);
@@ -239,7 +238,8 @@ int main(void)
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
-                    break;;
+                    break;
+                    ;
                 }
                 else
                 {
@@ -299,13 +299,9 @@ int main(void)
                         }
                     }
                     if (deleted)
-                    {
                         deleted = 0;
-                    }
                     else
-                    {
                         printf("NOT FOUND\n");
-                    }
                 }
                 break;
             default:

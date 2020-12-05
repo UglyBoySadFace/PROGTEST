@@ -9,10 +9,33 @@ struct Record
     int active;
     char *number, *name;
 };
+int formatName(char *input)
+{
+    char *d = input;
+    if (*input == '"')
+        input++;
+    else
+        return 0;
+    while (*input)
+    {
+        if (*input == '"' && *++input == 0)
+        {
+            *d = 0;
+            return 1;
+        }
+        else
+            *d++ = *input++;
+    }
+    return 0;
+}
 void formatInput(char *input)
 {
     char *d = input;
     int space = 2;
+    if (*input == ' ')
+    {
+        *input = 0;
+    }
     while (*input)
     {
         if (space)
@@ -48,21 +71,9 @@ int checkDigits(char *number)
     }
     return 1;
 }
-void removeChar(char *str, char garbage)
-{
-
-    char *src, *dst;
-    for (src = dst = str; *src != '\0'; src++)
-    {
-        *dst = *src;
-        if (*dst != garbage)
-            dst++;
-    }
-    *dst = '\0';
-}
 void stripLF(char *line)
 {
-    int l = strlen(line);
+    long int l = strlen(line);
     if (l > 0 && line[l - 1] == '\n')
         line[l - 1] = 0;
 }
@@ -81,15 +92,16 @@ int T9(char *name, char *number)
     char n0[36] = {
         '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
         'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '\0'};
-    int num_len = strlen(number),
-        name_len = strlen(number),
-        char_to_num, temp = 0;
+    long int num_len = strlen(number),
+             name_len = strlen(number);
+    int char_to_num,
+        temp = 0;
     if (num_len == name_len)
     {
-        for (int i = 0; i < num_len; i++)
+        for (long int i = 0; i < num_len; i++)
         {
             char_to_num = *number - '0';
-            for (int j = 0; j < 37; j++)
+            for (long int j = 0; j < 37; j++)
             {
                 if (char_to_num == 0)
                 {
@@ -131,60 +143,60 @@ int main(void)
     struct Record *record;
     record = (struct Record *)malloc(sizeof(struct Record));
     size_t capacity = 0, record_size = 0;
-    int temp_counter = 0, counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
+    int counter = 0, fail = 0, record_counter = 0, update = 0, matches = 0, deleted = 0;
+    long int skip;
     char hah[] = "lol";
-    char option = 'q', *input, *name = NULL, *number = NULL, *matched_name = hah, *matched_number = hah, *temp_info, *info;
+    char option = 'q', *input = hah, *temp_input = hah, *name = hah, *number = hah, *matched_name = hah, *matched_number = hah, *info = hah;
     while (getline(&input, &capacity, stdin) != -1)
     {
         formatInput(input);
-        if (!(*input == '+' || *input == '-' || *input == '?') || *input == 0)
+        stripLF(input);
+        if (!(*input == '+' || *input == '-' || *input == '?') || *input == 0 || input[1] == 0)
         {
             printf("INVALID COMMAND\n");
             fail = 1;
         }
-        info = strtok(input, " ");
-        while (info != NULL)
+        else
         {
-            if (counter == 0)
-                option = *info;
-            if (counter == 1)
-                number = info;
-            if (counter == 2)
-                name = info;
-            info = strtok(NULL, " ");
-            counter++;
-        }
-        if (name != NULL)
-        {
-            stripLF(name);
-            temp_info = strtok(name, "\"");
-            while (temp_info != NULL)
+            temp_input = strdup(input);
+            info = strtok(input, " ");
+            while (info != NULL)
             {
-                if (temp_counter == 0)
-                    name = temp_info;
-                temp_info = strtok(NULL, "\"");
-                temp_counter++;
+                if (counter == 0)
+                    option = *info;
+                if (counter == 1)
+                    number = info;
+                if (counter == 2)
+                    break;
+                info = strtok(NULL, " ");
+                counter++;
             }
-        }
-        if (number == NULL)
-        {
-            temp_counter = 0;
-            counter = 0;
-            printf("INVALID COMMAND\n");
-            continue;
+            if (option == '+')
+            {
+                skip = strlen(number) + 3;
+                for (int i = 0; i < skip; i++)
+                    memmove(&temp_input[0], &temp_input[1], strlen(temp_input));
+            }
+            if (number == NULL && !fail)
+            {
+                counter = 0;
+                printf("INVALID COMMAND\n");
+                continue;
+            }
         }
         if (!fail)
         {
             switch (option)
             {
             case '+':
-                if ((!checkDigits(number) || counter != 3 || temp_counter > 1))
+                if ((!checkDigits(number) || counter != 2))
                 {
                     printf("INVALID COMMAND\n");
                     break;
                 }
-                else
+                else if (formatName(temp_input))
                 {
+                    name = temp_input;
                     if (record_counter == 0)
                     {
                         record[record_counter].name = strdup(name);
@@ -192,7 +204,7 @@ int main(void)
                         record[record_counter].active = 1;
                         printf("NEW\n");
                         record_counter++;
-                        record_size = sizeof(struct Record) * pow(2, record_counter + 1);
+                        record_size = sizeof(struct Record) * pow(2, record_counter);
                         record = (struct Record *)realloc(record, record_size);
                     }
                     else
@@ -227,14 +239,18 @@ int main(void)
                             record[record_counter].active = 1;
                             printf("NEW\n");
                             record_counter++;
-                            record_size = sizeof(struct Record) * pow(2, record_counter + 1);
+                            record_size = sizeof(struct Record) * (record_counter + 1);
                             record = (struct Record *)realloc(record, record_size);
                         }
                     }
                 }
+                else
+                {
+                    printf("INVALID COMMAND\n");
+                    break;
+                }
                 break;
             case '?':
-                stripLF(number);
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
@@ -280,7 +296,6 @@ int main(void)
                 }
                 break;
             case '-':
-                stripLF(number);
                 if (!checkDigits(number) || counter != 2)
                 {
                     printf("INVALID COMMAND\n");
@@ -312,7 +327,8 @@ int main(void)
         matches = 0;
         fail = 0;
         counter = 0;
-        temp_counter = 0;
     }
     free(record);
+    free(input);
+    free(temp_input);
 }

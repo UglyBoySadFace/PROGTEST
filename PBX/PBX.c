@@ -9,6 +9,15 @@ struct Record
     int active;
     char *number, *name;
 };
+void freeMem(struct Record *record, int size)
+{
+  for (int i = 0; i < size; i++)
+  {
+    free(record[i].number);
+    free(record[i].name);
+  }
+  free(record);
+}
 int formatName(char *input)
 {
     char *d = input;
@@ -346,13 +355,5 @@ int main(void)
         fail = 0;
         counter = 0;
     }
-    free(record);
-    if (record_counter > 0)
-    {
-        free(input);
-        free(temp_input); 
-/*
-        free(matched_name);
-        free(matched_number);*/
-    }
+    freeMem(record, record_counter);
 }

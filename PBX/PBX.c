@@ -24,7 +24,13 @@ int formatName(char *input)
             return 1;
         }
         else
+        {
+            if (*input == '\\')
+                input++;
+            if (*input == 0)
+                return 0;
             *d++ = *input++;
+        }
     }
     return 0;
 }
@@ -137,6 +143,16 @@ int T9(char *name, char *number)
     else
         return 0;
 }
+int countSpaces(char *input)
+{
+    int count = 0;
+    while (*input)
+    {
+        if (*input++ == ' ')
+            count++;
+    }
+    return count;
+}
 int main(void)
 {
     printf("PBX configuration (+ = set, - = delete, ? = test, EOF = quit):\n");
@@ -171,6 +187,8 @@ int main(void)
                 info = strtok(NULL, " ");
                 counter++;
             }
+            if (*input == '-' || *input == '?')
+                counter = countSpaces(temp_input) + 1;
             if (option == '+')
             {
                 skip = strlen(number) + 3;
@@ -329,6 +347,12 @@ int main(void)
         counter = 0;
     }
     free(record);
-    free(input);
-    free(temp_input);
+    if (record_counter > 0)
+    {
+        free(input);
+        free(temp_input); 
+/*
+        free(matched_name);
+        free(matched_number);*/
+    }
 }

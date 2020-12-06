@@ -11,12 +11,12 @@ struct Record
 };
 void freeMem(struct Record *record, int size)
 {
-  for (int i = 0; i < size; i++)
-  {
-    free(record[i].number);
-    free(record[i].name);
-  }
-  free(record);
+    for (int i = 0; i < size; i++)
+    {
+        free(record[i].number);
+        free(record[i].name);
+    }
+    free(record);
 }
 int formatName(char *input)
 {
@@ -162,6 +162,7 @@ int countSpaces(char *input)
     }
     return count;
 }
+
 int main(void)
 {
     printf("PBX configuration (+ = set, - = delete, ? = test, EOF = quit):\n");
@@ -226,8 +227,21 @@ int main(void)
                     name = temp_input;
                     if (record_counter == 0)
                     {
-                        record[record_counter].name = strdup(name);
-                        record[record_counter].number = strdup(number);
+                        for (int i = 0; i <= strlen(name); i++)
+                        {
+                            if (i == strlen(name))
+                                record[record_counter].name[i] = 0;
+                            else
+                                record[record_counter].name[i] = *name++;
+                        }
+                        for (int i = 0; i <= strlen(number); i++)
+                        {
+                            if (i == strlen(number))
+                                record[record_counter].number[i] = 0;
+                            else
+                                record[record_counter].number[i] = *number++;
+                        }
+                        record[record_counter].active = 1;
                         record[record_counter].active = 1;
                         printf("NEW\n");
                         record_counter++;
@@ -261,8 +275,20 @@ int main(void)
                             update = 0;
                         else
                         {
-                            record[record_counter].name = strdup(name);
-                            record[record_counter].number = strdup(number);
+                            for (int i = 0; i <= strlen(name); i++)
+                            {
+                                if (i == strlen(name))
+                                    record[record_counter].name[i] = 0;
+                                else
+                                    record[record_counter].name[i] = *name++;
+                            }
+                            for (int i = 0; i <= strlen(number); i++)
+                            {
+                                if (i == strlen(number))
+                                    record[record_counter].number[i] = 0;
+                                else
+                                    record[record_counter].number[i] = *number++;
+                            }
                             record[record_counter].active = 1;
                             printf("NEW\n");
                             record_counter++;

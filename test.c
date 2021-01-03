@@ -1,177 +1,311 @@
 #ifndef __PROGTEST__
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+#include <ctype.h>
+#include <limits.h>
 #include <assert.h>
 #endif /* __PROGTEST__ */
 
-int isPrestupni(int year)
+struct Domino
 {
-  if (year % 4000 == 0)
-  {
-    return 0;
-  }
-  else if (year % 400 == 0)
-  {
-    return 1;
-  }
-  else if (year % 100 == 0)
-  {
-    return 0;
-  }
-  else if (year % 4 == 0)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
-}
-int cuckooPerHour(int hour)
+
+  int number1;
+  int number2;
+
+  int number3;
+  int number4;
+
+  int unique;
+
+  char *name;
+};
+
+int countCollectible(const char *list)
 {
-  if (hour > 12)
+  int startRead = 0, size = 0, count = 0;
+  char *name = NULL;
+  const char *temp = list;
+  name = (char *)malloc(sizeof(char));
+  struct Domino *domino;
+  domino = (struct Domino *)malloc(sizeof(struct Domino));
+  while (*list)
   {
-    return hour - 12;
+    if (*list == '\'' && startRead == 0)
+    {
+      list++;
+      startRead = 1;
+    }
+    else if (*list == '\'' && startRead)
+    {
+      list++;
+      startRead = 0;
+      name = (char *)realloc(name, sizeof(char) * (size + 1));
+      name[size] = 0;
+      (domino + count)->name = (char *)malloc(sizeof(char) * (size + 1));
+      strcpy((domino + count)->name, name);
+      count++;
+      free(name);
+      domino = (struct Domino *)realloc(domino, sizeof(struct Domino) * (count + 1));
+      name = (char *)malloc(sizeof(char));
+      size = 0;
+    }
+    if (startRead)
+    {
+      name = (char *)realloc(name, sizeof(char) * (size + 1));
+      name[size] = *list;
+      size++;
+    }
+    list++;
   }
-  else
+  char *num;
+  num = (char *)malloc(sizeof(char));
+  int num_count = 0;
+  int side_count = 0;
+  int load = 0;
+  while (*temp)
   {
-    return hour;
+    if (*temp == '[')
+      startRead = 1;
+
+    if (startRead)
+    {
+      if (isdigit(*temp))
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count++] = *temp;
+      }
+      if (*temp == '|')
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count] = 0;
+        if (side_count % 4 == 0)
+        {
+          domino[load].number1 = atoi(num);
+        }
+        else if (side_count % 4 == 2)
+        {
+          domino[load].number3 = atoi(num);
+        }
+        side_count++;
+        free(num);
+        num = (char *)malloc(sizeof(char));
+        num_count = 0;
+      }
+      if (*temp == ']')
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count] = 0;
+        if (side_count % 4 == 1)
+        {
+          domino[load].number2 = atoi(num);
+        }
+        else if (side_count % 4 == 3)
+        {
+          domino[load].number4 = atoi(num);
+        }
+        side_count++;
+        if (side_count % 4 == 0)
+          load++;
+        free(num);
+        num = (char *)malloc(sizeof(char));
+        num_count = 0;
+        startRead = 0;
+      }
+    }
+    temp++;
   }
+  int result = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (strcmp((domino + i)->name, "Segfault Extreme") == 0 && ((domino[i].number1 + domino[i].number2) == 48 ||
+                                                                (domino[i].number3 + domino[i].number4) == 48))
+    {
+      if (!(domino[i].number1 + domino[i].number2 == 48 && domino[i].number3 + domino[i].number4 == 48))
+        result++;
+    }
+  }
+  for (int i = 0; i < count; i++)
+  {
+    free((domino + i)->name);
+  }
+  free(num);
+  free(domino);
+  free(name);
+  return result;
 }
-int cuckooClock(int y1, int m1, int d1, int h1, int i1,
-                int y2, int m2, int d2, int h2, int i2,
-                long long int *cuckoo)
+
+int countUnique(const char *list)
 {
-    long long int cuckoos = 0;
-    int first_Months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    int second_Months[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if (isPrestupni(y1))
+  int startRead = 0, size = 0, count = 0;
+  char *name = NULL;
+  const char *temp = list;
+  name = (char *)malloc(sizeof(char));
+  struct Domino *domino;
+  domino = (struct Domino *)malloc(sizeof(struct Domino));
+  while (*list)
+  {
+    if (*list == '\'' && startRead == 0)
     {
-        first_Months[1] = 29;
+      list++;
+      startRead = 1;
     }
-    if (isPrestupni(y2))
+    else if (*list == '\'' && startRead)
     {
-        second_Months[1] = 29;
+      list++;
+      startRead = 0;
+      name = (char *)realloc(name, sizeof(char) * (size + 1));
+      name[size] = 0;
+      (domino + count)->name = (char *)malloc(sizeof(char) * (size + 1));
+      strcpy((domino + count)->name, name);
+      (domino + count)->unique = 1;
+      count++;
+      free(name);
+      domino = (struct Domino *)realloc(domino, sizeof(struct Domino) * (count + 1));
+      name = (char *)malloc(sizeof(char));
+      size = 0;
     }
-    if (y1 < 1600 || y2 < 1600 || m1 < 1 || m1 > 12 || m2 < 1 || m2 > 12 ||
-        d1 < 1 || d1 > first_Months[m1 - 1] || d2 < 1 || d2 > second_Months[m2 - 1] ||
-        h1 < 0 || h1 > 23 || h2 < 0 || h2 > 23 || i1 < 0 || i1 > 59 || i2 < 0 || i2 > 59)
+    if (startRead)
     {
-        return 0;
+      name = (char *)realloc(name, sizeof(char) * (size + 1));
+      name[size] = *list;
+      size++;
     }
-    if ((y1 - y2) < 0)
+    list++;
+  }
+  char *num;
+  num = (char *)malloc(sizeof(char));
+  int num_count = 0;
+  int side_count = 0;
+  int load = 0;
+  while (*temp)
+  {
+    if (*temp == '[')
+      startRead = 1;
+
+    if (startRead)
     {
-        return 0;
-    }
-    else if (y1 == y2)
-    {
-        if (m1 > m2)
+      if (isdigit(*temp))
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count++] = *temp;
+      }
+      if (*temp == '|')
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count] = 0;
+        if (side_count % 4 == 0)
         {
-            return 0;
+          domino[load].number1 = atoi(num);
         }
-        if (m1 == m2)
+        else if (side_count % 4 == 2)
         {
-            if (d1 > d2)
-            {
-                return 0;
-            }
-            if (d1 == d2)
-            {
-                if (h1 > h2)
-                {
-                    return 0;
-                }
-                if (h1 == h2)
-                {
-                    if (i1 > i2)
-                    {
-                        return 0;
-                    }
-                }
-            }
+          domino[load].number3 = atoi(num);
         }
+        side_count++;
+        free(num);
+        num = (char *)malloc(sizeof(char));
+        num_count = 0;
+      }
+      if (*temp == ']')
+      {
+        num = (char *)realloc(num, sizeof(char) * (num_count + 1));
+        num[num_count] = 0;
+        if (side_count % 4 == 1)
+        {
+          domino[load].number2 = atoi(num);
+        }
+        else if (side_count % 4 == 3)
+        {
+          domino[load].number4 = atoi(num);
+        }
+        side_count++;
+        if (side_count % 4 == 0)
+          load++;
+        free(num);
+        num = (char *)malloc(sizeof(char));
+        num_count = 0;
+        startRead = 0;
+      }
     }
-    if ((h1 == 0 || h1 == 12) && i1 == 0)
+    temp++;
+  }
+
+  for (int i = 0; i < count; i++)
+  {
+    for (int j = i + 1; j < count; j++)
     {
-        cuckoos += 12;
+      if ((strcmp((domino + i)->name, (domino + j)->name) == 0 && (domino + j)->unique == 1) &&
+          (((domino + i)->number1 == (domino + j)->number1 && (domino + i)->number2 == (domino + j)->number2 && (domino + i)->number3 == (domino + j)->number3 && (domino + i)->number4 == (domino + j)->number4) ||
+           ((domino + i)->number1 == (domino + j)->number1 && (domino + i)->number2 == (domino + j)->number2 && (domino + i)->number3 == (domino + j)->number4 && (domino + i)->number4 == (domino + j)->number3) ||
+           ((domino + i)->number1 == (domino + j)->number2 && (domino + i)->number2 == (domino + j)->number1 && (domino + i)->number3 == (domino + j)->number3 && (domino + i)->number4 == (domino + j)->number4) ||
+           ((domino + i)->number1 == (domino + j)->number2 && (domino + i)->number2 == (domino + j)->number1 && (domino + i)->number3 == (domino + j)->number4 && (domino + i)->number4 == (domino + j)->number3) ||
+           ((domino + i)->number1 == (domino + j)->number3 && (domino + i)->number2 == (domino + j)->number4 && (domino + i)->number3 == (domino + j)->number1 && (domino + i)->number4 == (domino + j)->number2) ||
+           ((domino + i)->number1 == (domino + j)->number3 && (domino + i)->number2 == (domino + j)->number4 && (domino + i)->number3 == (domino + j)->number2 && (domino + i)->number4 == (domino + j)->number1) ||
+           ((domino + i)->number1 == (domino + j)->number4 && (domino + i)->number2 == (domino + j)->number3 && (domino + i)->number3 == (domino + j)->number1 && (domino + i)->number4 == (domino + j)->number2) ||
+           ((domino + i)->number1 == (domino + j)->number4 && (domino + i)->number2 == (domino + j)->number3 && (domino + i)->number3 == (domino + j)->number2 && (domino + i)->number4 == (domino + j)->number1)))
+      {
+        (domino + j)->unique = 0;
+      }
     }
-    while (!(y1 == y2 && m1 == m2 && d1 == d2 && h1 == h2 && i1 == i2))
-    {
-        if (i1 == 30)
-        {
-            cuckoos += 1;
-        }
-        i1++;
-        if (i1 == 60)
-        {
-            h1++;
-            i1 = 0;
-            cuckoos += cuckooPerHour(h1);
-            if (h1 == 24)
-            {
-                h1 = 0;
-                d1++;
-                if (d1 == first_Months[m1 - 1] + 1)
-                {
-                    d1 = 1;
-                    m1++;
-                    if (m1 == 13)
-                    {
-                        m1 = 1;
-                        y1++;
-                        if (isPrestupni(y1))
-                        {
-                            first_Months[1] = 29;
-                        }
-                        else
-                        {
-                            first_Months[1] = 28;
-                        }
-                    }
-                }
-            }
-        }
-        
-    }
-    *cuckoo = cuckoos;
-    return 1;
+  }
+  int result = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if ((domino + i)->unique == 1)
+      result++;
+    free((domino + i)->name);
+  }
+  free(num);
+  free(domino);
+  free(name);
+  return result;
 }
+
+uint64_t countTowers(const char *list)
+{
+  return 0; /* TODO */
+}
+
 #ifndef __PROGTEST__
-int main(int argc, char *argv[])
+int main(void)
 {
-  long long int cuckoo;
-  assert(cuckooClock(2013, 10, 1, 13, 15,
-                     2013, 10, 1, 18, 45, &cuckoo) == 1 &&
-         cuckoo == 26);
-  assert(cuckooClock(2013, 10, 1, 13, 15,
-                     2013, 10, 2, 11, 20, &cuckoo) == 1 &&
-         cuckoo == 165);
-  assert(cuckooClock(2013, 1, 1, 13, 15,
-                     2013, 10, 5, 11, 20, &cuckoo) == 1 &&
-         cuckoo == 49845);
-  assert(cuckooClock(2012, 1, 1, 13, 15,
-                     2012, 10, 5, 11, 20, &cuckoo) == 1 &&
-         cuckoo == 50025);
-  assert(cuckooClock(1900, 1, 1, 13, 15,
-                     1900, 10, 5, 11, 20, &cuckoo) == 1 &&
-         cuckoo == 49845);
-  assert(cuckooClock(2013, 10, 1, 0, 0,
-                     2013, 10, 1, 12, 0, &cuckoo) == 1 &&
-         cuckoo == 102);
-  assert(cuckooClock(2013, 10, 1, 0, 15,
-                     2013, 10, 1, 0, 25, &cuckoo) == 1 &&
-         cuckoo == 0);
-  assert(cuckooClock(2013, 10, 1, 12, 0,
-                     2013, 10, 1, 12, 0, &cuckoo) == 1 &&
-         cuckoo == 12);
-  assert(cuckooClock(2013, 11, 1, 12, 0,
-                     2013, 10, 1, 12, 0, &cuckoo) == 0);
-  assert(cuckooClock(2013, 10, 32, 12, 0,
-                     2013, 11, 10, 12, 0, &cuckoo) == 0);
-  assert(cuckooClock(2100, 2, 29, 12, 0,
-                     2100, 2, 29, 12, 0, &cuckoo) == 0);
-  assert(cuckooClock(2400, 2, 29, 12, 0,
-                     2400, 2, 29, 12, 0, &cuckoo) == 1 &&
-         cuckoo == 12);
+  const char *str1 =
+      " { 'Progtest Exam' ; [ 1 | 2 ] ; [ 3 | 4 ] }{'PA1 2020/2021';[2|2];[3|1]}\n"
+      "{'Progtest Exam' ; [ 2 | 1 ] ; [ 3 | 4 ] }\n"
+      "{'Progtest Exam' ; [ 2 | 3 ] ; [ 1 | 4 ] }\n";
+  const char *str2 =
+      "{'Crash';  [1|2];[3|4]}\n"
+      "{'MemLeak';[1|2];[3|4]}\n"
+      "{'MemLeak';[2|3];[3|1]}\n"
+      "{'MemLeak';[1|3];[3|2]}\n"
+      "{'MemLeak';[1|4];[1|5]}\n"
+      "{'MemLeak';[4|1];[1|5]}\n"
+      "{'MemLeak';[4|1];[5|1]}\n"
+      "{'MemLeak';[1|4];[5|1]}\n"
+      "{'MemLeak';[1|5];[1|4]}\n"
+      "{'MemLeak';[5|1];[1|4]}\n"
+      "{'MemLeak';[5|1];[4|1]}\n"
+      "{'MemLeak';[1|5];[4|1]}\n";
+  const char *str3 =
+      "{'-Wall -pedantic -Werror -Wno-long-long -O2';[2|2];[3|3]}\n"
+      "{'-Wall -pedantic -Werror -Wno-long-long -O2';[4|4];[5|5]}\n"
+      "{'-Wall -pedantic -Werror -Wno-long-long -O2';[3|4];[4|5]}\n";
+  const char *str4 =
+      "{'-fsanitize=address -g';[1|5];[5|7]}\n"
+      "{'-fsanitize=address -g';[3|7];[1|9]}\n"
+      "{'-fsanitize=address -g';[2|2];[4|7]}\n"
+      "{'-fsanitize=address -g';[3|9];[2|6]}\n"
+      "{'-fsanitize=address -g';[2|2];[2|2]}\n";
+
+  assert(countCollectible(str1) == 0);
+  assert(countUnique(str1) == 3);
+  assert(countUnique(str2) == 4);
+  assert(countUnique(str3) == 3);
+  assert(countUnique(str4) == 5);
+  assert(countTowers(str3) == 10);
+  assert(countTowers(str4) == 114);
   return 0;
 }
 #endif /* __PROGTEST__ */
